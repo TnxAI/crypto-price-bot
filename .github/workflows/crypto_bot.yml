@@ -2,7 +2,7 @@ name: Crypto Price Bot
 
 on:
   schedule:
-    - cron: '* * * * *'  # ✨ هر 1 دقیقه اجرا کن (برای تست)
+    - cron: '*/5 * * * *'  # ✨ هر 5 دقیقه (قابل اعتمادتر)
   workflow_dispatch:
 
 jobs:
