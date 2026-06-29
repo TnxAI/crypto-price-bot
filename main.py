@@ -1,61 +1,59 @@
 import requests
 import os
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import jdatetime
 
 def get_crypto_prices():
     """گرفتن قیمت ارزها از CoinGecko API"""
-    # لیست ارزها با آیدی CoinGecko
     coins = {
         'ton': 'the-open-network',
         'btc': 'bitcoin',
         'trx': 'tron',
         'xrp': 'ripple',
-        'ada': 'cardano'
+        'ada': 'cardano',
+        'usdt': 'tether'
     }
     
     coin_ids = ','.join(coins.values())
-    url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin_ids}&vs_currencies=usd"
     
-    try:
-        response = requests.get(url, timeout=15)
-        response.raise_for_status()
-        data = response.json()
-    except Exception as e:
-        raise Exception(f"خطا در دریافت قیمت‌ها: {e}")
+    # گرفتن قیمت همه ارزها به USDT
+    url_usdt = f"https://api.coingecko.com/api/v3/simple/price?ids={coin_ids}&vs_currencies=usdt"
+    response_usdt = requests.get(url_usdt, timeout=15).json()
+    
+    # گرفتن قیمت تتر به تومان (IRT)
+    url_irt = "https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=irt"
+    response_irt = requests.get(url_irt, timeout=15).json()
+    
+    # استخراج قیمت‌ها
+    ton_price = response_usdt.get('the-open-network', {}).get('usdt', 0)
+    btc_price = response_usdt.get('bitcoin', {}).get('usdt', 0)
+    trx_price = response_usdt.get('tron', {}).get('usdt', 0)
+    xrp_price = response_usdt.get('ripple', {}).get('usdt', 0)
+    ada_price = response_usdt.get('cardano', {}).get('usdt', 0)
+    usdt_irt = response_irt.get('tether', {}).get('irt', 0)
     
     # ساخت متن پیام
     lines = []
+    lines.append(f"1 Ton = {ton_price:.2f} USDT")
+    lines.append(f"1 BTC = {int(btc_price):,} USDT")
+    lines.append(f"1 TRX = {trx_price:.6f} USDT")
+    lines.append(f"1 XRP = {xrp_price:.2f} USDT")
+    lines.append(f"1 ADA = {ada_price:.6f} USDT")
     
-    # TON
-    ton_price = data.get('the-open-network', {}).get('usd', 0)
-    lines.append(f"1 Ton = {ton_price:.2f} USD")
-    
-    # BTC
-    btc_price = data.get('bitcoin', {}).get('usd', 0)
-    lines.append(f"1 BTC = {int(btc_price):,} USD")
-    
-    # TRX
-    trx_price = data.get('tron', {}).get('usd', 0)
-    lines.append(f"1 TRX = {trx_price:.6f} USD")
-    
-    # XRP
-    xrp_price = data.get('ripple', {}).get('usd', 0)
-    lines.append(f"1 XRP = {xrp_price:.2f} USD")
-    
-    # ADA
-    ada_price = data.get('cardano', {}).get('usd', 0)
-    lines.append(f"1 ADA = {ada_price:.6f} USD")
-    
-    # USDT (تتر معمولاً به IRT در نوبیتکس ناموجود است، پس همان فرمت شما)
-    lines.append("1 USDT = ناموجود IRT")
+    # قیمت تتر به تومان
+    if usdt_irt:
+        lines.append(f"1 USDT = {int(usdt_irt):,} IRT")
+    else:
+        lines.append("1 USDT = ناموجود IRT")
     
     return '\n'.join(lines)
 
 def get_persian_datetime():
-    """گرفتن تاریخ و ساعت شمسی"""
-    # گرفتن زمان فعلی
-    now = datetime.now()
+    """گرفتن تاریخ و ساعت شمسی با timezone تهران"""
+    # ✨ تنظیم timezone به تهران (UTC+3:30)
+    tehran_tz = ZoneInfo('Asia/Tehran')
+    now = datetime.now(tehran_tz)
     
     # تبدیل به تاریخ شمسی
     jalali_now = jdatetime.datetime.fromgregorian(datetime=now)
@@ -69,7 +67,7 @@ def get_persian_datetime():
               'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند']
     month_name = months[jalali_now.month - 1]
     
-    # فرمت: جمعه 22 مرداد 1404 - 00:15
+    # فرمت: چهارشنبه 8 تیر 1405 - 11:10
     formatted = f"{day_name} {jalali_now.day} {month_name} {jalali_now.year} - {jalali_now.strftime('%H:%M')}"
     
     return formatted
@@ -99,22 +97,16 @@ def send_to_telegram(text):
 def main():
     """تابع اصلی"""
     try:
-        # گرفتن قیمت‌ها
         prices = get_crypto_prices()
-        
-        # گرفتن تاریخ شمسی
         persian_date = get_persian_datetime()
         
-        # ساخت پیام کامل با فرمت دلخواه
         message = f"""{prices}
 
 {persian_date}
 
 📢 @Dollar_Alert"""
         
-        # ارسال به تلگرام
         send_to_telegram(message)
-        
         print("✅ اجرا با موفقیت انجام شد")
         
     except Exception as e:
