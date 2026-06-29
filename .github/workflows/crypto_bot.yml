@@ -2,8 +2,11 @@ name: Crypto Price Bot
 
 on:
   schedule:
-    - cron: '*/5 * * * *'  # ✨ هر 5 دقیقه (قابل اعتمادتر)
-  workflow_dispatch:
+    - cron: '0 * * * *'  # هر 1 ساعت (رأس هر ساعت)
+  workflow_dispatch:      # امکان اجرای دستی
+  push:                   # ✨ تریگر push - هر بار که commit/push کنید
+    branches:
+      - main
 
 jobs:
   send_prices:
@@ -12,6 +15,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -22,8 +27,18 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run bot
+      - name: Run bot (creates prices.txt)
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
         run: python main.py
+
+      - name: Commit and push prices.txt
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add prices.txt
+          git commit -m "📊 Update prices - $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
