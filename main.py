@@ -11,12 +11,13 @@ def get_crypto_prices():
         'btc': 'bitcoin',
         'trx': 'tron',
         'xrp': 'ripple',
-        'ada': 'cardano'
+        'ada': 'cardano',
+        'xaut': 'tether-gold'  # ✨ اضافه شد
     }
     
     coin_ids = ','.join(coins.values())
     
-    # گرفتن قیمت به USD (چون USDT قبول نمی‌کند)
+    # گرفتن قیمت به USD
     url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin_ids}&vs_currencies=usd"
     response = requests.get(url, timeout=15).json()
     
@@ -26,6 +27,7 @@ def get_crypto_prices():
     trx_price = response.get('tron', {}).get('usd', 0)
     xrp_price = response.get('ripple', {}).get('usd', 0)
     ada_price = response.get('cardano', {}).get('usd', 0)
+    xaut_price = response.get('tether-gold', {}).get('usd', 0)  # ✨ اضافه شد
     
     # گرفتن قیمت تتر به تومان از نوبیتکس
     usdt_irt = get_usdt_price_from_nobitex()
@@ -37,6 +39,7 @@ def get_crypto_prices():
     lines.append(f"1 TRX = {trx_price:.6f} USDT")
     lines.append(f"1 XRP = {xrp_price:.2f} USDT")
     lines.append(f"1 ADA = {ada_price:.6f} USDT")
+    lines.append(f"1 XAU = {xaut_price:,.2f} USDT")  # ✨ اضافه شد
     
     # قیمت تتر به تومان
     if usdt_irt:
@@ -54,7 +57,6 @@ def get_usdt_price_from_nobitex():
         data = response.json()
         
         if data.get('status') == 'ok':
-            # آخرین قیمت معامله شده
             last_price = data.get('lastTradePrice', 0)
             return float(last_price)
     except Exception as e:
