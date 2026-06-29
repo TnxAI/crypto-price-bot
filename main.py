@@ -11,27 +11,24 @@ def get_crypto_prices():
         'btc': 'bitcoin',
         'trx': 'tron',
         'xrp': 'ripple',
-        'ada': 'cardano',
-        'usdt': 'tether'
+        'ada': 'cardano'
     }
     
     coin_ids = ','.join(coins.values())
     
-    # گرفتن قیمت همه ارزها به USDT
-    url_usdt = f"https://api.coingecko.com/api/v3/simple/price?ids={coin_ids}&vs_currencies=usdt"
-    response_usdt = requests.get(url_usdt, timeout=15).json()
-    
-    # گرفتن قیمت تتر به تومان (IRT)
-    url_irt = "https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=irt"
-    response_irt = requests.get(url_irt, timeout=15).json()
+    # گرفتن قیمت به USD (چون USDT قبول نمی‌کند)
+    url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin_ids}&vs_currencies=usd"
+    response = requests.get(url, timeout=15).json()
     
     # استخراج قیمت‌ها
-    ton_price = response_usdt.get('the-open-network', {}).get('usdt', 0)
-    btc_price = response_usdt.get('bitcoin', {}).get('usdt', 0)
-    trx_price = response_usdt.get('tron', {}).get('usdt', 0)
-    xrp_price = response_usdt.get('ripple', {}).get('usdt', 0)
-    ada_price = response_usdt.get('cardano', {}).get('usdt', 0)
-    usdt_irt = response_irt.get('tether', {}).get('irt', 0)
+    ton_price = response.get('the-open-network', {}).get('usd', 0)
+    btc_price = response.get('bitcoin', {}).get('usd', 0)
+    trx_price = response.get('tron', {}).get('usd', 0)
+    xrp_price = response.get('ripple', {}).get('usd', 0)
+    ada_price = response.get('cardano', {}).get('usd', 0)
+    
+    # گرفتن قیمت تتر به تومان از نوبیتکس
+    usdt_irt = get_usdt_price_from_nobitex()
     
     # ساخت متن پیام
     lines = []
@@ -49,25 +46,36 @@ def get_crypto_prices():
     
     return '\n'.join(lines)
 
+def get_usdt_price_from_nobitex():
+    """گرفتن قیمت تتر از نوبیتکس"""
+    try:
+        url = "https://api.nobitex.ir/v2/orderbook/USDT-IRT"
+        response = requests.get(url, timeout=10)
+        data = response.json()
+        
+        if data.get('status') == 'ok':
+            # آخرین قیمت معامله شده
+            last_price = data.get('lastTradePrice', 0)
+            return float(last_price)
+    except Exception as e:
+        print(f"خطا در دریافت قیمت تتر از نوبیتکس: {e}")
+    
+    return None
+
 def get_persian_datetime():
     """گرفتن تاریخ و ساعت شمسی با timezone تهران"""
-    # ✨ تنظیم timezone به تهران (UTC+3:30)
     tehran_tz = ZoneInfo('Asia/Tehran')
     now = datetime.now(tehran_tz)
     
-    # تبدیل به تاریخ شمسی
     jalali_now = jdatetime.datetime.fromgregorian(datetime=now)
     
-    # نام روز هفته به فارسی
     weekdays = ['دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه', 'شنبه', 'یکشنبه']
     day_name = weekdays[jalali_now.weekday()]
     
-    # نام ماه به فارسی
     months = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
               'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند']
     month_name = months[jalali_now.month - 1]
     
-    # فرمت: چهارشنبه 8 تیر 1405 - 11:10
     formatted = f"{day_name} {jalali_now.day} {month_name} {jalali_now.year} - {jalali_now.strftime('%H:%M')}"
     
     return formatted
