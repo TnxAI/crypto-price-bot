@@ -78,12 +78,13 @@ def get_crypto_prices():
     xaut_formatted = format_price(xaut_price, decimals=2, use_comma=True)
     lines.append(f"1 XAU = {xaut_formatted} USDT")
     
-    # USDT به تومان
+    # USDT به تومان (✨ اصلاح شد: تقسیم بر 10 برای تبدیل ریال به تومان)
     if usdt_irt and usdt_irt > 0:
-        usdt_formatted = f"{int(usdt_irt):,}"
+        usdt_toman = usdt_irt / 10  # تبدیل ریال به تومان
+        usdt_formatted = f"{int(usdt_toman):,}"
     else:
         usdt_formatted = "ناموجود"
-    lines.append(f"1 USDT = {usdt_formatted} IRT")
+    lines.append(f"1 USDT = {usdt_formatted} Toman")  # ✨ تغییر واحد به Toman
     
     return '\n'.join(lines)
 
