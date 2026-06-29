@@ -2,10 +2,8 @@ name: Crypto Price Bot
 
 on:
   schedule:
-    # هر 15 دقیقه اجرا کن
     - cron: '*/15 * * * *'
   workflow_dispatch:
-    # امکان اجرای دستی
 
 jobs:
   send_prices:
@@ -13,10 +11,10 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4  # ✨ نسخه جدیدتر
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v5  # ✨ نسخه جدیدتر
         with:
           python-version: '3.11'
           cache: 'pip'
