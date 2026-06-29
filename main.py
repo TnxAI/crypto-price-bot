@@ -84,7 +84,7 @@ def get_crypto_prices():
         usdt_formatted = f"{int(usdt_toman):,}"
     else:
         usdt_formatted = "ناموجود"
-    lines.append(f"1 USDT = {usdt_formatted} Toman")  # ✨ تغییر واحد به Toman
+    lines.append(f"1 USDT = {usdt_formatted} IRT")  # ✨ تغییر واحد به Toman
     
     return '\n'.join(lines)
 
