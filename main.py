@@ -48,74 +48,58 @@ def get_crypto_prices():
     ada_price = data.get('cardano', {}).get('usd', 0)
     xaut_price = data.get('tether-gold', {}).get('usd', 0)
     
-    # گرفتن قیمت اونس جهانی طلا (Gold Ounce)
-    gold_ounce_price = get_gold_ounce_price()
+    # استفاده از XAUT به عنوان قیمت اونس جهانی طلا
+    gold_ounce_price = xaut_price if xaut_price else 0
     
     # گرفتن قیمت تتر از نوبیتکس
     usdt_irt = get_usdt_price_from_nobitex()
     
     # محاسبه قیمت طلای 18 عیار
-    # فرمول: (قیمت اونس جهانی × نرخ دلار در ایران) ÷ 41.4713
     gold_18_price = calculate_gold_18_price(gold_ounce_price, usdt_irt)
     
-    # ساخت متن پیام
+    # ساخت متن پیام (بدون ایموجی، بدون اونس طلا، تتر در آخر)
     lines = []
     
     # TON
     ton_formatted = format_price(ton_price, decimals=2)
-    lines.append(f"💎 1 Ton = {ton_formatted} USDT")
+    lines.append(f"1 Ton = {ton_formatted} USDT")
     
     # BTC
     btc_formatted = format_price(btc_price, decimals=0, use_comma=True)
-    lines.append(f"₿ 1 BTC = {btc_formatted} USDT")
+    lines.append(f"1 BTC = {btc_formatted} USDT")
     
     # TRX
     trx_formatted = format_price(trx_price, decimals=6)
-    lines.append(f"🔷 1 TRX = {trx_formatted} USDT")
+    lines.append(f"1 TRX = {trx_formatted} USDT")
     
     # XRP
     xrp_formatted = format_price(xrp_price, decimals=2)
-    lines.append(f"💫 1 XRP = {xrp_formatted} USDT")
+    lines.append(f"1 XRP = {xrp_formatted} USDT")
     
     # ADA
     ada_formatted = format_price(ada_price, decimals=6)
-    lines.append(f"🔹 1 ADA = {ada_formatted} USDT")
+    lines.append(f"1 ADA = {ada_formatted} USDT")
     
     # XAUT (Tether Gold)
     xaut_formatted = format_price(xaut_price, decimals=2, use_comma=True)
-    lines.append(f"🥇 1 XAU = {xaut_formatted} USDT")
+    lines.append(f"1 XAU = {xaut_formatted} USDT")
     
-    # قیمت اونس جهانی طلا
-    gold_ounce_formatted = format_price(gold_ounce_price, decimals=2, use_comma=True)
-    lines.append(f" 1 Oz Gold = {gold_ounce_formatted} USD")
+    # طلای 18 عیار
+    if gold_18_price and gold_18_price > 0:
+        gold_18_formatted = f"{int(gold_18_price):,}"
+    else:
+        gold_18_formatted = "ناموجود"
+    lines.append(f"1g Gold 18K = {gold_18_formatted} Toman")
     
-    # USDT به تومان
+    # USDT به تومان (آخرین آیتم)
     if usdt_irt and usdt_irt > 0:
         usdt_toman = usdt_irt / 10
         usdt_formatted = f"{int(usdt_toman):,}"
     else:
         usdt_formatted = "ناموجود"
-    lines.append(f"💵 1 USDT = {usdt_formatted} Toman")
-    
-    # طلای 18 عیار
-    if gold_18_price:
-        gold_18_formatted = f"{int(gold_18_price):,}"
-    else:
-        gold_18_formatted = "ناموجود"
-    lines.append(f" 1g Gold 18K = {gold_18_formatted} Toman")
+    lines.append(f"1 USDT = {usdt_formatted} Toman")
     
     return '\n'.join(lines)
-
-def get_gold_ounce_price():
-    """گرفتن قیمت اونس جهانی طلا از CoinGecko"""
-    try:
-        url = "https://api.coingecko.com/api/v3/simple/price?ids=gold&vs_currencies=usd"
-        response = requests.get(url, timeout=10)
-        data = response.json()
-        return data.get('gold', {}).get('usd', 0)
-    except Exception as e:
-        print(f"خطا در دریافت قیمت اونس طلا: {e}")
-        return 0
 
 def calculate_gold_18_price(gold_ounce_price, usdt_irt):
     """
@@ -124,12 +108,8 @@ def calculate_gold_18_price(gold_ounce_price, usdt_irt):
     """
     if gold_ounce_price and usdt_irt and usdt_irt > 0:
         try:
-            # نرخ دلار به تومان (تقسیم بر 10 برای تبدیل ریال به تومان)
-            usd_to_toman = (usdt_irt / 10)
-            
-            # محاسبه قیمت طلای 18 عیار
+            usd_to_toman = usdt_irt / 10
             gold_18_price = (gold_ounce_price * usd_to_toman) / 41.4713
-            
             return gold_18_price
         except Exception as e:
             print(f"خطا در محاسبه طلای 18 عیار: {e}")
@@ -176,10 +156,9 @@ def save_to_file(prices, persian_date, chat_id):
 
 {persian_date}
 
-📢 Channel ID: {chat_id}
+ Channel ID: {chat_id}
 """
     
-    # ذخیره در فایل prices.txt
     with open('prices.txt', 'w', encoding='utf-8') as f:
         f.write(message)
     
@@ -228,7 +207,7 @@ def main():
         print("✅ اجرا با موفقیت انجام شد")
         
     except Exception as e:
-        print(f"❌ خطا: {e}")
+        print(f" خطا: {e}")
         raise
 
 if __name__ == "__main__":
