@@ -101,15 +101,15 @@ def get_crypto_prices():
     
     return '\n'.join(lines)
 
-def calculate_gold_18_price(gold_ounce_price, usdt_irt):
+def calculate_gold_18_price(xaut_price, usdt_irt):
     """
     محاسبه قیمت طلای 18 عیار
     فرمول: (قیمت اونس جهانی × نرخ دلار در ایران) ÷ 41.4713
     """
-    if gold_ounce_price and usdt_irt and usdt_irt > 0:
+    if xaut_price and usdt_irt and usdt_irt > 0:
         try:
             usd_to_toman = usdt_irt / 10
-            gold_18_price = (gold_ounce_price * usd_to_toman) / 41.4713
+            gold_18_price = (xaut_price * usd_to_toman) / 41.4713
             return gold_18_price
         except Exception as e:
             print(f"خطا در محاسبه طلای 18 عیار: {e}")
