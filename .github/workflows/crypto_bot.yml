@@ -12,11 +12,15 @@ jobs:
   send_prices:
     runs-on: ubuntu-latest
     
+    permissions:
+      contents: write    # ✅ دسترسی نوشتن به مخزن
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0  # ✅ برای جلوگیری از خطاهای git
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -31,14 +35,23 @@ jobs:
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: python main.py
 
       - name: Commit and push prices.txt
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          git add prices.txt
-          git commit -m "📊 Update prices - $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
-          git push
+          
+          # بررسی اینکه فایل وجود داره
+          if [ -f "prices.txt" ]; then
+            git add prices.txt
+            git commit -m "📊 Update prices - $(date '+%Y-%m-%d %H:%M:%S')" || echo "No changes to commit"
+            git push
+          else
+            echo "⚠️ فایل prices.txt وجود ندارد!"
+            exit 1
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
