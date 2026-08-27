@@ -140,7 +140,8 @@ def get_persian_datetime():
     
     jalali_now = jdatetime.datetime.fromgregorian(datetime=now)
     
-    weekdays = ['دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه', 'شنبه', 'یکشنبه']
+    # ✅ ترتیب صحیح روزهای هفته در jdatetime: شنبه=0، یکشنبه=1، ...، پنج‌شنبه=5، جمعه=6
+    weekdays = ['شنبه', 'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه']
     day_name = weekdays[jalali_now.weekday()]
     
     months = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
