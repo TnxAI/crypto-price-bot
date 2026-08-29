@@ -1,12 +1,12 @@
 1 Ton = 1.36 USDT
-1 BTC = 77,359 USDT
-1 TRX = 0.341610 USDT
-1 XRP = 1.37 USDT
-1 ADA = 0.200360 USDT
+1 BTC = 77,630 USDT
+1 TRX = 0.340680 USDT
+1 XRP = 1.38 USDT
+1 ADA = 0.201568 USDT
 1 XAU = 4,456 USDT
-1g Gold 18K = 21,685,253 Toman
-1 USDT = 201,800 Toman
+1g Gold 18K = 21,730,293 Toman
+1 USDT = 202,196 Toman
 
-شنبه 7 شهریور 1405 - 01:26
+شنبه 7 شهریور 1405 - 07:07
 
 📢 Channel ID: @Dollar_Alert
